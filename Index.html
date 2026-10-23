@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal Expense Tracker</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f3f5fb;
+  color: #20243a;
+}
+
+.app {
+  max-width: 1100px;
+  margin: auto;
+  padding: 25px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.header h1 {
+  margin-bottom: 8px;
+}
+
+.header p {
+  color: #73798d;
+}
+
+.badge {
+  background: #e6eaff;
+  color: #4548b8;
+  padding: 10px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.card, .panel {
+  background: white;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 4px 18px #20243a0c;
+}
+
+.card p {
+  color: #73798d;
+  margin-top: 0;
+}
+
+.card h2 {
+  margin-bottom: 0;
+  font-size: 26px;
+  overflow-wrap: anywhere;
+}
+
+.income-card {
+  border-top: 4px solid #24a879;
+}
+
+.expense-card {
+  border-top: 4px solid #ed6a75;
+}
+
+.balance-card {
+  border-top: 4px solid #6667db;
+}
+
+.panel {
+  margin-bottom: 22px;
+}
+
+.panel h2 {
+  margin-top: 0;
+  font-size: 20px;
+}
+
+form {
+  display: grid;
+  gap: 10px;
+}
+
+label {
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+input, select {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #dfe2ed;
+  border-radius: 9px;
+  background: white;
+  font-size: 14px;
+}
+
+button {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 9px;
+  background: #5557d9;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+button:hover {
+  background: #4143b8;
+}
+
+form button {
+  margin-top: 8px;
+}
+
+.budget-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.budget-row input {
+  flex: 1;
+}
+
+#budgetMessage {
+  line-height: 1.5;
+  color: #73798d;
+}
+
+.chart {
+  display: grid;
+  gap: 16px;
+}
+
+.chart-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 90px;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.bar-bg {
+  height: 12px;
+  background: #eceef7;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  background: #6667db;
+  border-radius: 10px;
+}
+
+.history-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.history-heading input {
+  max-width: 180px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  white-space: nowrap;
+}
+
+th, td {
+  padding: 13px 10px;
+  border-bottom: 1px solid #eceef5;
+  font-size: 13px;
+}
+
+th {
+  color: #73798d;
+}
+
+.delete-btn {
+  background: #fff0f0;
+  color: #d13d4b;
+  padding: 8px 10px;
+}
+
+.delete-btn:hover {
+  background: #ffdddd;
+}
+
+#emptyMessage {
+  color: #73798d;
+  text-align: center;
+  padding: 15px;
+}
+
+footer {
+  text-align: center;
+  color: #73798d;
+  padding: 15px;
+  font-size: 13px;
+}
+
+@media (max-width: 700px) {
+  .app {
+    padding: 15px;
+  }
+
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .summary {
+    grid-template-columns: 1fr;
+  }
+
+  .budget-row {
+    flex-direction: column;
+  }
+
+  .history-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .chart-row {
+    grid-template-columns: 75px 1fr 75px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <header class="header">
+    <div>
+      <h1>💰 Personal Expense Tracker</h1>
+      <p>Manage your money smartly.</p>
+    </div>
+    <span class="badge">PERSONAL FINANCE</span>
+  </header>
+
+  <section class="summary">
+
+    <div class="card income-card">
+      <p>Total Income</p>
+      <h2 id="totalIncome">₹0</h2>
+    </div>
+
+    <div class="card expense-card">
+      <p>Total Expenses</p>
+      <h2 id="totalExpense">₹0</h2>
+    </div>
+
+    <div class="card balance-card">
+      <p>Available Balance</p>
+      <h2 id="balance">₹0</h2>
+    </div>
+
+  </section>
+
+  <section class="panel">
+
+    <h2>Add Transaction</h2>
+
+    <form id="expenseForm">
+
+      <label for="title">Transaction Name</label>
+      <input id="title" type="text"
+        placeholder="e.g. College bus fee" required>
+
+      <label for="amount">Amount (₹)</label>
+      <input id="amount" type="number"
+        min="0.01" step="0.01"
+        placeholder="Enter amount" required>
+
+      <label for="type">Transaction Type</label>
+      <select id="type">
+        <option value="expense">Expense</option>
+        <option value="income">Income</option>
+      </select>
+
+      <label for="category">Category</label>
+      <select id="category">
+        <option>Food</option>
+        <option>Travel</option>
+        <option>Education</option>
+        <option>Shopping</option>
+        <option>Bills</option>
+        <option>Health</option>
+        <option>Salary</option>
+        <option>Pocket Money</option>
+        <option>Other</option>
+      </select>
+
+      <label for="date">Date</label>
+      <input id="date" type="date" required>
+
+      <button type="submit">+ Add Transaction</button>
+
+    </form>
+
+  </section>
+
+  <section class="panel">
+
+    <h2>Monthly Budget</h2>
+
+    <label for="budget">Set Monthly Budget (₹)</label>
+
+    <div class="budget-row">
+      <input id="budget" type="number"
+        min="0" step="0.01"
+        placeholder="Enter your budget">
+
+      <button id="saveBudget" type="button">
+        Save Budget
+      </button>
+    </div>
+
+    <p id="budgetMessage">
+      Set a budget to track your spending.
+    </p>
+
+  </section>
+
+  <section class="panel">
+
+    <h2>Expense Breakdown</h2>
+    <div id="chart" class="chart"></div>
+
+  </section>
+
+  <section class="panel">
+
+    <div class="history-heading">
+      <h2>Transaction History</h2>
+
+      <input id="monthFilter" type="month"
+        aria-label="Filter transactions by month">
+    </div>
+
+    <div class="table-wrap">
+
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody id="transactionList"></tbody>
+      </table>
+
+    </div>
+
+    <p id="emptyMessage">No transactions added yet.</p>
+
+  </section>
+
+  <footer>
+    Personal Expense Tracker | Manage your money wisely.
+  </footer>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const form = $("expenseForm");
+const titleInput = $("title");
+const amountInput = $("amount");
+const typeInput = $("type");
+const categoryInput = $("category");
+const dateInput = $("date");
+const budgetInput = $("budget");
+const monthFilter = $("monthFilter");
+
+const STORAGE_KEY = "personalExpenseTracker_v1";
+
+let transactions = [];
+
+try {
+  const savedData = JSON.parse(
+    localStorage.getItem(STORAGE_KEY) || "{}"
+  );
+
+  if (Array.isArray(savedData.transactions)) {
+    transactions = savedData.transactions.filter(t =>
+      t &&
+      typeof t.id === "string" &&
+      typeof t.title === "string" &&
+      Number.isFinite(t.amount) &&
+      t.amount > 0 &&
+      ["income", "expense"].includes(t.type) &&
+      typeof t.category === "string" &&
+      /^\d{4}-\d{2}-\d{2}$/.test(t.date)
+    );
+  }
+
+  if (
+    Number.isFinite(savedData.budget) &&
+    savedData.budget >= 0
+  ) {
+    budgetInput.value = savedData.budget;
+  }
+} catch (error) {
+  transactions = [];
+}
+
+function localDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function currentMonth() {
+  return localDate(new Date()).slice(0, 7);
+}
+
+dateInput.value = localDate(new Date());
+monthFilter.value = currentMonth();
+
+function money(amount) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2
+  }).format(amount);
+}
+
+function saveData() {
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        transactions,
+        budget: Number(budgetInput.value) || 0
+      })
+    );
+  } catch (error) {
+    alert("Unable to save data. Please check browser storage.");
+  }
+}
+
+function addTextCell(row, value) {
+  const cell = document.createElement("td");
+  cell.textContent = value;
+  row.appendChild(cell);
+  return cell;
+}
+
+function render() {
+  const selectedMonth = monthFilter.value || currentMonth();
+
+  const visibleTransactions = transactions
+    .filter(t => t.date.startsWith(selectedMonth))
+    .sort((a, b) => b.date.localeCompare(a.date));
+
+  const income = visibleTransactions
+    .filter(t => t.type === "income")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const expenses = visibleTransactions
+    .filter(t => t.type === "expense")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  $("totalIncome").textContent = money(income);
+  $("totalExpense").textContent = money(expenses);
+  $("balance").textContent = money(income - expenses);
+
+  renderHistory(visibleTransactions);
+  renderChart(visibleTransactions);
+  renderBudget(expenses);
+}
+
+function renderHistory(items) {
+  const list = $("transactionList");
+  list.replaceChildren();
+
+  $("emptyMessage").hidden = items.length > 0;
+
+  items.forEach(t => {
+    const row = document.createElement("tr");
+
+    addTextCell(row, t.title);
+    addTextCell(row, t.category);
+    addTextCell(row, t.date);
+
+    const amountCell = addTextCell(
+      row,
+      `${t.type === "income" ? "+" : "-"}${money(t.amount)}`
+    );
+
+    amountCell.style.color =
+      t.type === "income" ? "#16865f" : "#d13d4b";
+
+    const actionCell = document.createElement("td");
+    const button = document.createElement("button");
+
+    button.type = "button";
+    button.className = "delete-btn";
+    button.textContent = "Delete";
+
+    button.addEventListener("click", () => {
+      if (!confirm(`Delete "${t.title}" transaction?`)) {
+        return;
+      }
+
+      transactions = transactions.filter(
+        item => item.id !== t.id
+      );
+
+      saveData();
+      render();
+    });
+
+    actionCell.appendChild(button);
+    row.appendChild(actionCell);
+    list.appendChild(row);
+  });
+}
+
+function renderChart(items) {
+  const chart = $("chart");
+  chart.replaceChildren();
+
+  const totals = {};
+
+  items
+    .filter(t => t.type === "expense")
+    .forEach(t => {
+      totals[t.category] =
+        (totals[t.category] || 0) + t.amount;
+    });
+
+  const categories = Object.entries(totals)
+    .sort((a, b) => b[1] - a[1]);
+
+  if (categories.length === 0) {
+    chart.textContent = "No expenses to display this month.";
+    return;
+  }
+
+  const highest = Math.max(...categories.map(item => item[1]));
+
+  categories.forEach(([category, amount]) => {
+    const row = document.createElement("div");
+    row.className = "chart-row";
+
+    const name = document.createElement("span");
+    name.textContent = category;
+
+    const background = document.createElement("div");
+    background.className = "bar-bg";
+
+    const bar = document.createElement("div");
+    bar.className = "bar";
+    bar.style.width = `${amount / highest * 100}%`;
+
+    background.appendChild(bar);
+
+    const value = document.createElement("span");
+    value.textContent = money(amount);
+
+    row.append(name, background, value);
+    chart.appendChild(row);
+  });
+}
+
+function renderBudget(expenses) {
+  const budget = Number(budgetInput.value) || 0;
+  const message = $("budgetMessage");
+
+  if (budget <= 0) {
+    message.textContent =
+      "Set a monthly budget to track your spending.";
+    message.style.color = "#73798d";
+    return;
+  }
+
+  const remaining = budget - expenses;
+
+  if (remaining < 0) {
+    message.textContent =
+      `Budget exceeded by ${money(Math.abs(remaining))}.`;
+    message.style.color = "#d13d4b";
+  } else if (remaining === 0) {
+    message.textContent =
+      "You have reached your monthly budget.";
+    message.style.color = "#d13d4b";
+  } else {
+    message.textContent =
+      `${money(remaining)} budget remaining.`;
+    message.style.color = "#16865f";
+  }
+}
+
+form.addEventListener("submit", event => {
+  event.preventDefault();
+
+  const title = titleInput.value.trim();
+  const amount = Number(amountInput.value);
+  const date = dateInput.value;
+
+  if (!title || !Number.isFinite(amount) || amount <= 0) {
+    alert("Please enter a valid name and amount.");
+    return;
+  }
+
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    alert("Please select a valid date.");
+    return;
+  }
+
+  transactions.push({
+    id: crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random()}`,
+    title,
+    amount,
+    type: typeInput.value,
+    category: categoryInput.value,
+    date
+  });
+
+  saveData();
+  form.reset();
+
+  dateInput.value = localDate(new Date());
+
+  render();
+});
+
+$("saveBudget").addEventListener("click", () => {
+  const budget = Number(budgetInput.value);
+
+  if (
+    budgetInput.value.trim() === "" ||
+    !Number.isFinite(budget) ||
+    budget < 0
+  ) {
+    alert("Please enter a valid budget amount.");
+    return;
+  }
+
+  saveData();
+  render();
+});
+
+monthFilter.addEventListener("change", render);
+
+render();
+</script>
+
+</body>
+</html>
